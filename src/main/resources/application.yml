@@ -1,0 +1,13 @@
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: user_service
+          uri: http://127.0.0.1:9002  # Gin ??????
+          predicates:
+            - Path=/api/user/get  # ?????
+          filters:
+            - RewritePath=/api/user/get, /api/user/get  # ????
+
+server:
+  port: 8089  # Spring Cloud Gateway ???
