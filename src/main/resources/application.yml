@@ -1,13 +1,152 @@
-spring:
-  cloud:
-    gateway:
-      routes:
-        - id: user_service
-          uri: http://127.0.0.1:9002  # Gin ??????
-          predicates:
-            - Path=/api/user/get  # ?????
-          filters:
-            - RewritePath=/api/user/get, /api/user/get  # ????
-
 server:
   port: 8089  # Spring Cloud Gateway ???
+spring:
+  data:
+    redis:
+#      host: 192.168.1.7
+      host: 127.0.0.1
+      port: 56378
+      database: 10
+  cloud:
+    redis-rate-limiter:
+      enabled: true
+    gateway:
+
+#      global cors:  # ??
+#        cors-configurations:
+#          '[/**]':
+#            allowedOrigins: "https://docs.spring.io"
+#            allowedMethods:
+#              - GET, POST
+
+#      default-filters: # ??
+#        - AddResponseHeader=resource, gateway
+#        - PrefixPath=/httpbin
+
+      routes:
+#        - id: test
+#          uri: https://www.baidu.com
+#          predicates:
+#            - Before=2025-01-20T17:42:47.789-07:00[America/Denver]
+#            - After=2025-01-20T17:42:47.789-07:00[America/Denver]
+#            - Between=2024-01-20T17:42:47.789-07:00[America/Denver],2025-01-20T17:42:47.789-07:00[America/Denver]
+#            - name: Cookie
+#              args:
+#                name: myCookie
+#                regexp: myCookieValue
+#            - Header=X-Request-Id, \d+
+#            - Host=**.demo.com,**.other.com
+#            - Method=GET,POST
+#            - Query=page
+#            - Path=/api/**  # ?????
+
+#        - id: weight_high  # ???????????????
+#          uri: http://127.0.0.1:9002
+#          predicates:
+#            - Weight=group1, 8
+#        - id: weight_low
+#          uri: http://127.0.0.1:9003
+#          predicates:
+#            - Weight=group1, 2
+
+#        - id: test2
+#          uri: http://127.0.0.1:9002
+#          predicates:
+#            - Path=/api/**  # ?????
+#          filters:
+#            - AddRequestHeader=source, gateway
+#            - AddRequestParameter=age, 12
+#            - MapRequestHeader=Blue, X-Request-Red  # ???????? key
+#            - PrefixPath=/prefix  # ????
+#            - RedirectTo=302, https://www.baidu.com  # ???
+#            - RewritePath=/consumingServiceEndpoint, /backingServiceEndpoint # ????
+#            - StripPrefix # ??????
+#
+#            - name: Retry   # ?????????
+#              args:
+#                retries: 3
+#                statuses: BAD_GATEWAY
+#                methods: GET,POST
+#                backoff:
+#                  firstBackoff: 10ms
+#                  maxBackoff: 50ms
+#                  factor: 2
+#                  basedOnPreviousValue: false
+
+#            - name: CircuitBreaker   # ????
+#              args:
+#                name: myCircuitBreaker
+#                fallbackUri: forward:/inCaseOfFailureUseThis
+
+        - id: redis-rate-limiter
+          uri: http://127.0.0.1:9002
+          predicates:
+            - Method=GET,POST
+          filters:
+            name: RequestRateLimiter  # redis ????????
+            args:
+#              rate-limiter: "#{@redisRateLimiter}"
+#              key-resolver: "#{@apiKeyResolver}"
+#              key-resolver: "#{@uriKeyResolver}"
+              key-resolver: "#{@userKeyResolver}"
+              redis-rate-limiter.replenishRate: 1  # ????????/???????????
+              redis-rate-limiter.burstCapacity: 1  # ???????????????
+              redis-rate-limiter.requestedTokens: 1  # ??????????
+
+logging:
+  level:
+#    org.springframework.context.annotation.AnnotationConfigApplicationContext: DEBUG
+#    org.springframework.cloud.gateway.filter: TRACE
+#    org.springframework.cloud.gateway.handler.predicate: TRACE
+#    org.springframework.cloud.gateway.route: TRACE
+#    org.springframework.cloud.gateway.filter.ratelimit: TRACE
+#    org.springframework.web: TRACE
+#    org.springframework.data.redis: TRACE
+    org:
+      springframework:
+        cloud:
+          gateway: trace
+
+
+#spring:
+#  redis:
+#    host: 192.168.1.7
+#    port: 46397
+#    database: 10
+#  cloud:
+#    gateway:
+#      #      global cors:
+#      #        cors-configurations:
+#      #          '[/**]':
+#      #            allowedOrigins: "*" #???????*????
+#      #            allowedMethods: #???????
+#      #              - GET
+#      #              - POST
+#      #              - PUT
+#      #              - DELETE
+#      routes:
+#        - id: user_service
+#          uri: http://127.0.0.1:9002  # Gin ??????
+#          predicates:
+#            - Path=/api/*  # ?????
+#          filters:
+#            #            - AddRequestHeader=source, gateway
+#            - RewritePath=/api/user/get, /api/user/get  # ????
+#            - name: RequestRateLimiter
+#              args:
+#                redis-rate-limiter.replenishRate: 10
+#                redis-rate-limiter.burstCapacity: 20
+#                key-resolver: "#{@apiKeyResolver}"
+#
+#
+#server:
+#  port: 8089  # Spring Cloud Gateway ???
+#
+#logging:
+#  level:
+#    org:
+#      springframework:
+#        cloud:
+#          gateway: trace
+#
+
